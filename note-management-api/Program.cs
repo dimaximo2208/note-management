@@ -12,22 +12,6 @@ using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-//using (var context = new NoteContext())
-//{
-//    var std = new Student()
-//    {
-//        FirstName = "Bill",
-//        LastName = "Gates"
-//    };
-//    context.Students.Add(std);
-
-//    // or
-//    // context.Add<Student>(std);
-
-//    context.SaveChanges();
-//}
-
 builder.Services.AddControllers();
 
 builder.Services.AddSingleton(sp =>
