@@ -1,0 +1,42 @@
+NB: spero di aver capito bene, ma l'app è sprovvista di autenticazione, per cui anche sul db non è presente una tabella con gli utenti. Inizialmente l'avevo prevista 
+(infatti sul backend sono presenti i modelli per la tabella USERS, ma successivamente, rileggendo il task, ho deciso di non proseguire).
+La parte grafica è stata poco curata, spero e credo che non fosse quello il focus del task.
+
+Ho deciso di utilizzare .NET Core 6 per lo sviluppo delle api REST, e React per lo sviluppo dell'applicazione web.
+
+Sono partito con lo sviluppo del backend e ho deciso di strutturare il backend in questo modo: i controller per definire gli endpoint, un layer di mezzo (handler) per gestire 
+le chiamate e un layer di servizio per comunicare con il db.
+
+Prima di tutto ho definito i 4 progetti della solution:
+-Models: qui sono definite le classi per la definizione dei modelli lato Database (cartella DB) e i modelli che verrano poi restituiti al front end (cartella DTO) in quanto non tutto ciò che è letto dal db è 
+utile mostrarlo all'utente.
+E' presente anche la classe che mappa i settings dell'appsettings nel quale è definita la connection string.
+
+-Services: ho deciso di utilizzare Entity Framework core con un approccio Code first. Ho implementato l'appDbContext, in cui sono definite le tabelle da utilizzare (una in questo caso), facendo riferimento al modello 
+precedentemente definito nei models. Fatto ciò, ho aggiunto una migration con il comando "add-migration InitialMigration" che ha creato la cartella Migration con i file necessari per eseguire gli script per la creazione 
+del database.
+Lanciando il comando sulla console di gestione pacchetti "update-database" vengono lanciate le migrations e, quindi, eseguiti gli script per la definizione del db.
+Infinte, è stata definita la classe NoteService.cs in cui, utilizzando il dbContext, sono stati definiti i metodi per eseguire le query sul db, che verranno poi richiamati dall'handler.
+Questi metodi restituiscono i dati così come sono restituiti dal db, utilizzando infatti gli stessi modelli.
+
+-Core: in questo progetto è definito l'handler che gestisce le chiamate api. Qui sono, quindi, definiti i metodi che verranno poi richiamati dai controller.
+I metodi dell'handler non restituiscono ciò che il service legge dal db, ma (utilizzando AutoMapper) i dati vengono mappati nei modelli definiti nella cartella DTO.
+Inoltre, l'handler non chiama direttamente i metodi del services: è stata implementata un interfaccia INoteService che espone i metodi. Questo è utile in quanto mantiene indipendente il resto dell'applicazione dal
+Services. (mi rendo conto di come questo in particolare, ma anche tutta la suddivisione in layer del progetto, sia poco "utile" in questo caso, ma volevo far vedere come strutturo tipicamente le mie applicazioni).
+
+-API: qui sono definiti i controller e i MappingProfiles utili ad automapper per mappare i modelli. 
+
+Nel program.cs, infine, sono registrati tutti i vari servizi. 
+
+
+
+
+Per quanto riguarda il frontend ho deciso di realizzare un'applicazione web in React.
+App.tsx è l'entry point dell'applicazione, e qui, utilizzando il pacchetto "react-router-dom" viene gestito il routing dell'applicazione. In particolare, ogni path restituisce un componente React, che sarà wrappato 
+all'interno del componente Layout (che contiene la Navbar).
+Il progetto è poi strutturato in questo modo:
+-pages: qui ci sono i componenti relativi ai path definiti in precedenza. Ogni page, oltre ad avere una logica, richiama al suo interno dei componenti definiti della cartella "components".
+-components: come detto, qui sono presenti i vari componenti che vanno a strutturare le pagine.
+-models: qui sono definiti i modelli degli oggetti provenienti dal backend.
+-api: qui sono definite le chiamate api. E' stato utilizzato Axios per gestire le chiamate, e l'url delle api è definito del file .env.
+Per la grafica, è stata utilizzata la libreria mui.
